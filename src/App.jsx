@@ -79,7 +79,15 @@ function App() {
     setShowCamera(false)
   }
 
-  // Limpa o stream quando o componente é desmontado
+  useEffect(() => {
+    if (showCamera && videoRef.current && stream) {
+      videoRef.current.srcObject = stream
+      videoRef.current.play().catch(err => {
+        console.error('Erro ao iniciar vídeo:', err)
+      })
+    }
+  }, [showCamera, stream])
+  
   useEffect(() => {
     return () => {
       if (stream) {
@@ -87,6 +95,7 @@ function App() {
       }
     }
   }, [stream])
+  
 
   return (
     <div className="app">

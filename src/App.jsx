@@ -2,16 +2,17 @@ import { useState, useRef, useEffect } from 'react'
 import Header from './components/Header/Header'
 import MainContent from './components/MainContent/MainContent'
 import CameraModal from './components/CameraModal/CameraModal'
+import PhotoPreviewModal from './components/PhotoPreviewModal/PhotoPreviewModal' // Novo componente
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null)
   const [statusMessage, setStatusMessage] = useState('Nenhum arquivo selecionado')
   const [showCamera, setShowCamera] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
   const videoRef = useRef(null)
   const [stream, setStream] = useState(null)
   const [useFrontCamera, setUseFrontCamera] = useState(false)
   const [capturedImage, setCapturedImage] = useState(null)
-
 
   const handleFileChange = (file) => {
     setSelectedFile(file)
@@ -22,12 +23,12 @@ function App() {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices()
       const hasCamera = devices.some(device => device.kind === 'videoinput')
-  
+      
       if (!hasCamera) {
         alert('Nenhuma câmera encontrada neste dispositivo.')
         return
       }
-  
+
       const constraints = {
         video: {
           facingMode: useFrontCamera ? 'user' : 'environment',
@@ -35,12 +36,12 @@ function App() {
           height: { ideal: 1080 }
         }
       }
-  
+
       if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
         delete constraints.video.width
         delete constraints.video.height
       }
-  
+
       const mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
       setStream(mediaStream)
       setShowCamera(true)
@@ -49,42 +50,46 @@ function App() {
       alert('Não foi possível acessar a câmera. Verifique as permissões.')
     }
   }
-  
 
   const takePhoto = () => {
     const video = videoRef.current
     const canvas = document.createElement('canvas')
     const context = canvas.getContext('2d')
-  
+
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
-  
+
     if (useFrontCamera) {
       context.translate(canvas.width, 0)
       context.scale(-1, 1)
     }
-  
+
     context.drawImage(video, 0, 0, canvas.width, canvas.height)
-  
+
     canvas.toBlob((blob) => {
       const file = new File([blob], 'foto-camera.png', { type: 'image/png' })
       const previewUrl = URL.createObjectURL(blob)
       setCapturedImage({ file, previewUrl })
-      stopCamera()
+      setShowCamera(false)
+      setShowPreview(true)
     }, 'image/png')
   }
-  
 
   const confirmPhoto = () => {
     handleFileChange(capturedImage.file)
+    setShowPreview(false)
     setCapturedImage(null)
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop())
+      setStream(null)
+    }
   }
-  
+
   const retakePhoto = () => {
+    setShowPreview(false)
     setCapturedImage(null)
     startCamera()
   }
-  
 
   const stopCamera = () => {
     if (stream) {
@@ -110,7 +115,6 @@ function App() {
       }
     }
   }, [stream])
-  
 
   return (
     <div className="app">
@@ -123,26 +127,26 @@ function App() {
       />
       
       {showCamera && (
-  <CameraModal
-    videoRef={videoRef}
-    onTakePhoto={takePhoto}
-    onClose={stopCamera}
-    onToggleCamera={() => setUseFrontCamera(prev => !prev)}
-    usingFrontCamera={useFrontCamera}
-  />
-)}
+        <CameraModal
+          videoRef={videoRef}
+          onTakePhoto={takePhoto}
+          onClose={stopCamera}
+          onToggleCamera={() => setUseFrontCamera(prev => !prev)}
+          usingFrontCamera={useFrontCamera}
+        />
+      )}
 
-  {capturedImage && (
-  <div className="photo-preview">
-    <img src={capturedImage.previewUrl} alt="Prévia da foto" />
-    <div className="photo-actions">
-      <button onClick={confirmPhoto}>✅ Enviar Imagem</button>
-      <button onClick={retakePhoto}>🔁 Tirar Outra Foto</button>
-    </div>
-  </div>
-)}
-
-
+      {showPreview && capturedImage && (
+        <PhotoPreviewModal
+          imageUrl={capturedImage.previewUrl}
+          onConfirm={confirmPhoto}
+          onRetake={retakePhoto}
+          onClose={() => {
+            setShowPreview(false)
+            setCapturedImage(null)
+          }}
+        />
+      )}
     </div>
   )
 }

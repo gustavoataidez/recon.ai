@@ -4,7 +4,11 @@ const CameraModal = ({ videoRef, onTakePhoto, onClose, onToggleCamera, usingFron
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
-        <button className={styles.closeButton} onClick={onClose} aria-label="Fechar câmera">
+        <button 
+          className={styles.closeButton} 
+          onClick={onClose}
+          aria-label="Fechar câmera"
+        >
           &times;
         </button>
 
@@ -20,8 +24,17 @@ const CameraModal = ({ videoRef, onTakePhoto, onClose, onToggleCamera, usingFron
         </div>
 
         <div className={styles.controls}>
-          <button onClick={onToggleCamera}>🔄 Trocar Câmera</button>
-          <button className={styles.captureButton} onClick={onTakePhoto}>
+          <button 
+            className={styles.switchCameraButton}
+            onClick={onToggleCamera}
+          >
+            {usingFrontCamera ? '🔄 Traseira' : '🔄 Frontal'}
+          </button>
+          <button 
+            className={styles.captureButton} 
+            onClick={onTakePhoto}
+            aria-label="Tirar foto"
+          >
             <div className={styles.captureIcon} />
           </button>
         </div>
@@ -29,7 +42,5 @@ const CameraModal = ({ videoRef, onTakePhoto, onClose, onToggleCamera, usingFron
     </div>
   )
 }
-
-
 
 export default CameraModal

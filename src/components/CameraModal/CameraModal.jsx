@@ -24,18 +24,19 @@ const CameraModal = ({ videoRef, onTakePhoto, onClose, onToggleCamera, usingFron
         </div>
 
         <div className={styles.controls}>
-          <button 
-            className={styles.switchCameraButton}
-            onClick={onToggleCamera}
-          >
-            {usingFrontCamera ? '🔄 Traseira' : '🔄 Frontal'}
-          </button>
+          
           <button 
             className={styles.captureButton} 
             onClick={onTakePhoto}
             aria-label="Tirar foto"
           >
             <div className={styles.captureIcon} />
+          </button>
+          <button 
+            className={styles.switchCameraButton}
+            onClick={onToggleCamera}
+          >
+            {usingFrontCamera ? 'Traseira' : 'Frontal'}
           </button>
         </div>
       </div>

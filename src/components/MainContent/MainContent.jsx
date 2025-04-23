@@ -3,7 +3,7 @@ import styles from './MainContent.module.css'
 import TitleContainer from '../TitleContainer/TitleContainer'
 import OptionCard from '../OptionCard/OptionCard'
 
-const MainContent = ({ onFileChange, onCameraClick, statusMessage, selectedFile }) => {
+const MainContent = ({ onFileChange, onCameraClick, statusMessage, selectedFile, onRecognitionClick }) => {
   const fileInputRef = useRef()
 
   const handleFileInputChange = (e) => {
@@ -56,7 +56,12 @@ const MainContent = ({ onFileChange, onCameraClick, statusMessage, selectedFile 
         )}
       </div>
       
-      <button className={styles.actionButton}>Fazer reconhecimento</button>
+      <button 
+        className={styles.actionButton}
+        onClick={onRecognitionClick} // Use a prop passada
+      >
+        Fazer reconhecimento
+      </button>
       
       <p className={styles.instructionText}>
         Carregue uma foto ou abra a câmera para poder tirar uma foto no seu aparelho.

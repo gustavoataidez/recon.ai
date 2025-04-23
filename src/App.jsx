@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom' // Adicione esta importação
 import Header from './components/Header/Header'
 import MainContent from './components/MainContent/MainContent'
 import CameraModal from './components/CameraModal/CameraModal'
-import PhotoPreviewModal from './components/PhotoPreviewModal/PhotoPreviewModal' // Novo componente
+import PhotoPreviewModal from './components/PhotoPreviewModal/PhotoPreviewModal'
 
 function App() {
+  const navigate = useNavigate() // Adicione este hook
   const [selectedFile, setSelectedFile] = useState(null)
   const [statusMessage, setStatusMessage] = useState('Nenhum arquivo selecionado')
   const [showCamera, setShowCamera] = useState(false)
@@ -13,7 +15,6 @@ function App() {
   const [stream, setStream] = useState(null)
   const [useFrontCamera, setUseFrontCamera] = useState(false)
   const [capturedImage, setCapturedImage] = useState(null)
-
   const handleFileChange = (file) => {
     setSelectedFile(file)
     setStatusMessage(file ? `Arquivo selecionado: ${file.name}` : 'Nenhum arquivo selecionado')
@@ -99,6 +100,14 @@ function App() {
     setShowCamera(false)
   }
 
+  const handleRecognition = () => {
+    if (!selectedFile) {
+      alert('Por favor, selecione uma imagem primeiro')
+      return
+    }
+    navigate('/resultados', { state: { image: selectedFile } })
+  }
+
   useEffect(() => {
     if (showCamera && videoRef.current && stream) {
       videoRef.current.srcObject = stream
@@ -124,6 +133,7 @@ function App() {
         onCameraClick={startCamera}
         statusMessage={statusMessage}
         selectedFile={selectedFile}
+        onRecognitionClick={handleRecognition} // Passe a função como prop
       />
       
       {showCamera && (

@@ -40,7 +40,7 @@
   
   .resultsSimilarity {
     text-align: center;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: bold;
     color: #C7212D;
   }
@@ -54,7 +54,7 @@
   }
   
   .resultsDataItem {
-    margin: 10px 0;
+    margin: 5px 0;
     font-size: 16px;
   }
   
@@ -75,7 +75,7 @@
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 500;
     transition: all 0.3s;
   }

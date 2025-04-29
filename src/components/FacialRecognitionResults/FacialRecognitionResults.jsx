@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import PessoaEncontrada from '../PessoaEncontrada/PessoaEncontrada';
 import styles from './FacialRecognitionResults.module.css';
 
 const FacialRecognitionResults = () => {
@@ -9,14 +10,14 @@ const FacialRecognitionResults = () => {
   const navigate = useNavigate();
   const { state } = location;
   const uploadedImage = state?.image;
-  const reportRef = useRef(null); // Ref para capturar a área do relatório
+  const reportRef = useRef(null);
+
+  const [pessoasEncontradas, setPessoasEncontradas] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const handleNewSearch = () => {
     navigate('/');
   };
-
-
-  
 
   const handleExportReport = async () => {
     if (reportRef.current) {
@@ -27,7 +28,6 @@ const FacialRecognitionResults = () => {
       });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-
       const pageWidth = pdf.internal.pageSize.getWidth();
       const imgProps = pdf.getImageProperties(imgData);
       const pdfWidth = pageWidth;
@@ -38,53 +38,43 @@ const FacialRecognitionResults = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchPessoas = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/pessoasEncontradas');
+        const data = await response.json();
+        console.log('DATA RECEBIDA:', data); // <--- TESTE IMPORTANTE
+        setPessoasEncontradas(data || []);
+      } catch (error) {
+        console.error('Erro ao buscar pessoas:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPessoas();
+  }, []);
+
   return (
     <div className={styles.resultsContainer} ref={reportRef}>
       <h1 className={styles.resultsTitle}>Resultado do Reconhecimento</h1>
-      
-      <div className={styles.resultsImageComparison}>
-        <div className={styles.resultsImageBox}>
-          <h4>Imagem Enviada</h4>
-          {uploadedImage ? (
-            <img 
-              src={URL.createObjectURL(uploadedImage)} 
-              alt="Imagem enviada"
-              className={styles.resultsImage} 
-            />
+
+      {loading ? (
+        <p>Carregando...</p>
+      ) : (
+        <div className={styles.pessoasList}>
+          {pessoasEncontradas.length > 0 ? (
+            pessoasEncontradas.map((pessoa, index) => (
+              <PessoaEncontrada key={index} pessoa={{
+                ...pessoa,
+                imagemEnviada: uploadedImage
+              }} />
+            ))
           ) : (
-            <img 
-              src="https://www.protrusmoto.com/wp-content/uploads/2015/04/placeholder-200x200.png" 
-              alt="Imagem padrão"
-              className={styles.resultsImage}
-            />
+            <p>Nenhuma pessoa encontrada.</p>
           )}
         </div>
-        <div className={styles.resultsImageBox}>
-          <h4>Imagem do Banco</h4>
-          <img 
-            src="https://www.protrusmoto.com/wp-content/uploads/2015/04/placeholder-200x200.png" 
-            alt="Imagem do banco"
-            className={styles.resultsImage}
-          />
-        </div>
-      </div>
-
-      <div className={styles.resultsSimilarity}>XX% de similaridade</div>
-
-      <div className={styles.resultsUserData}>
-        <div className={styles.resultsDataItem}>
-          <span className={styles.resultsDataLabel}>Nome:</span> XXXX XXXX XXXX
-        </div>
-        <div className={styles.resultsDataItem}>
-          <span className={styles.resultsDataLabel}>CPF:</span> XXX.XXX.XXX-XX
-        </div>
-        <div className={styles.resultsDataItem}>
-          <span className={styles.resultsDataLabel}>Data de Nascimento:</span> XX/XX/XXXX
-        </div>
-        <div className={styles.resultsDataItem}>
-          <span className={styles.resultsDataLabel}>Status:</span> <span className={styles.resultsSimilarity}>PROCURADO</span>
-        </div>
-      </div>
+      )}
 
       <div className={styles.resultsActions}>
         <button 

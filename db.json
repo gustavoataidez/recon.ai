@@ -1,0 +1,18 @@
+{
+  "pessoasEncontradas": [
+    {
+      "nome_completo": "Carlos Eduardo da Silva",
+      "cpf": "123.456.789-00",
+      "data_nascimento": "1985-07-12",
+      "imagem": "https://raw.githubusercontent.com/annandajacobs/Recognition-Front/refs/heads/master/back-test/known_faces/1.jpg?token=GHSAT0AAAAAADCG7R5YXH54IRF2ONJR43AK2APXYIA",
+      "status": "Procurado"
+    },
+    {
+      "nome_completo": "Mariana Costa Oliveira",
+      "cpf": "987.654.321-00",
+      "data_nascimento": "1990-02-28",
+      "imagem": "https://raw.githubusercontent.com/annandajacobs/Recognition-Front/refs/heads/master/back-test/known_faces/3.jpg?token=GHSAT0AAAAAADCG7R5YRHIF65LNRCA32IDA2APXYYQ",
+      "status": "Mandado de prisão"
+    }
+  ]
+}

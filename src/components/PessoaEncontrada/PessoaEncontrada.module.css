@@ -8,6 +8,40 @@
     align-items: center;
     gap: 0;
   }
+  /* Mantenha todos os estilos anteriores e adicione: */
+.imagesComparisonContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+.imageComparisonBox{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.comparisonImage {
+  width: 150px;
+  max-width: 200px;
+  height: 100px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: #f0f0f0; /* Fundo para quando a imagem não carregar */
+  min-height: 150px; /* Altura mínima para manter o layout */
+  object-fit: cover; /* Garante que a imagem preencha o espaço */
+}
+
+.resultsStatus {
+  font-weight: bold;
+  color: #2e7d32; /* Verde para status positivo */
+}
+
+.resultsStatus.unknown {
+  color: #d32f2f; /* Vermelho para status desconhecido */
+}
   .reconhecimentoIndividual{
     background-color: var(--background-light);
     padding: 10px;

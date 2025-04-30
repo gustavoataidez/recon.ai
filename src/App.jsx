@@ -100,13 +100,34 @@ function App() {
     setShowCamera(false)
   }
 
-  const handleRecognition = () => {
+  const handleRecognition = async () => {
     if (!selectedFile) {
       alert('Por favor, selecione uma imagem primeiro')
       return
     }
-    navigate('/resultados', { state: { image: selectedFile } })
-  }
+  
+    const formData = new FormData()
+    formData.append('file', selectedFile)
+  
+    try {
+      const response = await fetch('http://localhost:5001/upload', {
+        method: 'POST',
+        body: formData
+      })
+  
+      if (!response.ok) {
+        throw new Error('Erro ao fazer reconhecimento')
+      }
+  
+      const data = await response.json()
+  
+      // Envia os dados para a página de resultados
+      navigate('/resultados', { state: { resultado: data } })
+    } catch (error) {
+      console.error('Erro ao enviar imagem para API:', error)
+      alert('Erro ao processar a imagem. Tente novamente.')
+    }
+  }  
 
   useEffect(() => {
     if (showCamera && videoRef.current && stream) {

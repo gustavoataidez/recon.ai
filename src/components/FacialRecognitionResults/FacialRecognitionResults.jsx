@@ -1,23 +1,22 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import PessoaEncontrada from '../PessoaEncontrada/PessoaEncontrada';
-import styles from './FacialRecognitionResults.module.css';
+import React, { useRef } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
+import PessoaEncontrada from '../PessoaEncontrada/PessoaEncontrada'
+import styles from './FacialRecognitionResults.module.css'
 
 const FacialRecognitionResults = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { state } = location;
-  const uploadedImage = state?.image;
-  const reportRef = useRef(null);
+  const location = useLocation()
+  const navigate = useNavigate()
+  const reportRef = useRef(null)
 
-  const [pessoasEncontradas, setPessoasEncontradas] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const resultado = location.state?.resultado
+  const uploadedImage = resultado?.image
+  const pessoasEncontradas = resultado?.pessoas || [] // Assumindo que a resposta tem essa estrutura
 
   const handleNewSearch = () => {
-    navigate('/');
-  };
+    navigate('/')
+  }
 
   const handleExportReport = async () => {
     if (reportRef.current) {
@@ -25,65 +24,44 @@ const FacialRecognitionResults = () => {
         scale: 2,
         useCORS: true,
         allowTaint: false,
-      });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pageWidth;
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      })
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const imgProps = pdf.getImageProperties(imgData)
+      const pdfWidth = pageWidth
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('relatorio-reconhecimento.pdf');
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+      pdf.save('relatorio-reconhecimento.pdf')
     }
-  };
-
-  useEffect(() => {
-    const fetchPessoas = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/pessoasEncontradas');
-        const data = await response.json();
-        console.log('DATA RECEBIDA:', data); // <--- TESTE IMPORTANTE
-        setPessoasEncontradas(data || []);
-      } catch (error) {
-        console.error('Erro ao buscar pessoas:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPessoas();
-  }, []);
+  }
 
   return (
     <div className={styles.resultsContainer} ref={reportRef}>
       <h1 className={styles.resultsTitle}>Resultado do Reconhecimento</h1>
 
-      {loading ? (
-        <p>Carregando...</p>
-      ) : (
+      {pessoasEncontradas.length > 0 ? (
         <div className={styles.pessoasList}>
-          {pessoasEncontradas.length > 0 ? (
-            pessoasEncontradas.map((pessoa, index) => (
-              <PessoaEncontrada key={index} pessoa={{
-                ...pessoa,
-                imagemEnviada: uploadedImage
-              }} />
-            ))
-          ) : (
-            <p>Nenhuma pessoa encontrada.</p>
-          )}
+          {pessoasEncontradas.map((pessoa, index) => (
+            <PessoaEncontrada
+              key={index}
+              pessoa={{ ...pessoa, imagemEnviada: uploadedImage }}
+            />
+          ))}
         </div>
+      ) : (
+        <p>Nenhuma pessoa encontrada.</p>
       )}
 
       <div className={styles.resultsActions}>
-        <button 
+        <button
           className={`${styles.resultsBtn} ${styles.resultsBtnPrimary}`}
           onClick={handleExportReport}
         >
           Exportar Relatório
         </button>
-        <button 
+        <button
           className={`${styles.resultsBtn} ${styles.resultsBtnSecondary}`}
           onClick={handleNewSearch}
         >
@@ -91,7 +69,7 @@ const FacialRecognitionResults = () => {
         </button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default FacialRecognitionResults;
+export default FacialRecognitionResults

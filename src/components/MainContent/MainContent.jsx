@@ -7,9 +7,17 @@ const MainContent = ({ onFileChange, onCameraClick, statusMessage, selectedFile,
   const fileInputRef = useRef()
 
   const handleFileInputChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
+    console.log('Arquivo selecionado na galeria:', {
+      name: file?.name,
+      type: file?.type,
+      size: file?.size
+    });
+    
     if (file) {
-      onFileChange(file)
+      onFileChange(file);
+    } else {
+      console.error('Nenhum arquivo selecionado ou arquivo inválido');
     }
   }
 

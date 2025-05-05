@@ -1,0 +1,202 @@
+import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom' // Adicione esta importação
+import Header from './components/Header/Header'
+import MainContent from './components/MainContent/MainContent'
+import CameraModal from './components/CameraModal/CameraModal'
+import PhotoPreviewModal from './components/PhotoPreviewModal/PhotoPreviewModal'
+
+function App() {
+  const navigate = useNavigate() // Adicione este hook
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [statusMessage, setStatusMessage] = useState('Nenhum arquivo selecionado')
+  const [showCamera, setShowCamera] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
+  const videoRef = useRef(null)
+  const [stream, setStream] = useState(null)
+  const [useFrontCamera, setUseFrontCamera] = useState(false)
+  const [capturedImage, setCapturedImage] = useState(null)
+  const handleFileChange = (file) => {
+    setSelectedFile(file)
+    setStatusMessage(file ? `Arquivo selecionado: ${file.name}` : 'Nenhum arquivo selecionado')
+  }
+
+  const startCamera = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      const hasCamera = devices.some(device => device.kind === 'videoinput')
+      
+      if (!hasCamera) {
+        alert('Nenhuma câmera encontrada neste dispositivo.')
+        return
+      }
+
+      const constraints = {
+        video: {
+          facingMode: useFrontCamera ? 'user' : 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      }
+
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        delete constraints.video.width
+        delete constraints.video.height
+      }
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
+      setStream(mediaStream)
+      setShowCamera(true)
+    } catch (err) {
+      console.error('Erro ao acessar a câmera:', err)
+      alert('Não foi possível acessar a câmera. Verifique as permissões.')
+    }
+  }
+
+  const takePhoto = () => {
+    const video = videoRef.current
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+
+    if (useFrontCamera) {
+      context.translate(canvas.width, 0)
+      context.scale(-1, 1)
+    }
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+    canvas.toBlob((blob) => {
+      const file = new File([blob], 'foto-camera.png', { type: 'image/png' })
+      const previewUrl = URL.createObjectURL(blob)
+      setCapturedImage({ file, previewUrl })
+      setShowCamera(false)
+      setShowPreview(true)
+    }, 'image/png')
+  }
+
+  const confirmPhoto = () => {
+    handleFileChange(capturedImage.file)
+    setShowPreview(false)
+    setCapturedImage(null)
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop())
+      setStream(null)
+    }
+  }
+
+  const retakePhoto = () => {
+    setShowPreview(false)
+    setCapturedImage(null)
+    startCamera()
+  }
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop())
+      setStream(null)
+    }
+    setShowCamera(false)
+  }
+
+  const handleRecognition = async () => {
+    if (!selectedFile || !(selectedFile instanceof File)) {
+      alert('Por favor, selecione uma imagem válida primeiro');
+      return;
+    }
+  
+    console.log('Arquivo selecionado:', {
+      name: selectedFile.name,
+      type: selectedFile.type,
+      size: selectedFile.size
+    });
+  
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+  
+    try {
+      setStatusMessage('Processando imagem...');
+      
+      const response = await fetch('http://localhost:5001/upload', {
+        method: 'POST',
+        body: formData
+      });
+  
+      console.log('Resposta recebida:', response);
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `Erro HTTP: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log('Dados processados:', data);
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+  
+      navigate('/resultados', { state: { resultado: data } });
+      
+    } catch (error) {
+      console.error('Erro completo:', error);
+      setStatusMessage(`Erro: ${error.message}`);
+      alert(`Erro ao processar a imagem: ${error.message}`);
+    }
+  };
+  
+  useEffect(() => {
+    if (showCamera && videoRef.current && stream) {
+      videoRef.current.srcObject = stream
+      videoRef.current.play().catch(err => {
+        console.error('Erro ao iniciar vídeo:', err)
+      })
+    }
+  }, [showCamera, stream])
+  
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [stream])
+
+  return (
+    <div className="app">
+      <Header />
+      <MainContent 
+        onFileChange={handleFileChange}
+        onCameraClick={startCamera}
+        statusMessage={statusMessage}
+        selectedFile={selectedFile}
+        onRecognitionClick={handleRecognition} // Passe a função como prop
+      />
+      
+      {showCamera && (
+        <CameraModal
+          videoRef={videoRef}
+          onTakePhoto={takePhoto}
+          onClose={stopCamera}
+          onToggleCamera={() => setUseFrontCamera(prev => !prev)}
+          usingFrontCamera={useFrontCamera}
+        />
+      )}
+
+      {showPreview && capturedImage && (
+        <PhotoPreviewModal
+          imageUrl={capturedImage.previewUrl}
+          onConfirm={confirmPhoto}
+          onRetake={retakePhoto}
+          onClose={() => {
+            setShowPreview(false)
+            setCapturedImage(null)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+export default App

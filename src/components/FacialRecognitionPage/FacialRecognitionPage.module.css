@@ -158,19 +158,6 @@
     max-width: 300px;
     line-height: 1.5;
   }
-  
-  .resultTable {
-    margin-top: 20px;
-    border-collapse: collapse;
-  }
-  
-  .resultTable th,
-  .resultTable td {
-    padding: 10px;
-    border: 1px solid #ccc;
-    text-align: center;
-  }
-  
   .resultImage {
     margin-top: 20px;
     max-width: 100%;
@@ -178,3 +165,91 @@
     border-radius: 10px;
   }
   
+  .resultTable {
+    width: 100%;
+    max-width: 800px;
+    margin: 30px auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    font-size: 16px;
+  }
+  
+  .resultTable thead {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+  }
+  
+  .resultTable th {
+    padding: 16px 12px;
+    text-align: center;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.9em;
+  }
+  
+  .resultTable th:first-child {
+    width: 100px;
+  }
+  
+  .resultTable tbody tr {
+    transition: all 0.2s ease;
+    background-color: white;
+  }
+  
+  .resultTable tbody tr:nth-child(even) {
+    background-color: var(--background-light);
+  }
+  
+  .resultTable tbody tr:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .resultTable td {
+    padding: 14px 12px;
+    text-align: center;
+    color: var(--text-dark);
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .resultTable td:first-child {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .resultTable img {
+    width: 80px;
+    height: 80px;
+    border-radius: 5%;
+    object-fit: cover;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+  }
+  
+  .resultTable img:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  /* Adicionando efeito de borda arredondada na tabela */
+  .resultTable {
+    position: relative;
+  }
+  
+  .resultTable:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    pointer-events: none;
+  }
